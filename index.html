@@ -32,12 +32,46 @@
       font-size: 15px;
       line-height: 1.4;
     }
+    .game-layout {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 30px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
     canvas {
       background: #70c5ce;
       display: block;
-      margin: 20px auto;
+      margin: 0 auto;
       border: 4px solid #09192c;
       border-radius: 10px;
+    }
+    .calendar {
+      background: #132d50;
+      border-radius: 8px;
+      padding: 15px;
+      text-align: center;
+      color: white;
+    }
+    .calendar h3 {
+      margin: 0 0 10px 0;
+    }
+    .calendar table {
+      border-collapse: collapse;
+      width: 100%;
+      color: white;
+    }
+    .calendar th, .calendar td {
+      padding: 6px;
+      text-align: center;
+      border: 1px solid #09192c;
+    }
+    .calendar .today {
+      background: #ffdd57;
+      color: black;
+      font-weight: bold;
+      border-radius: 4px;
     }
     footer {
       margin: 20px 0;
@@ -58,89 +92,4 @@
 
   <main>
     <div class="counter">
-      <p>👀 Visitors: <span id="viewCount">Loading...</span></p>
-    </div>
-
-    <h2>Flappy Bird Game</h2>
-    <div class="instructions">
-      <p><strong>How to Play:</strong></p>
-      <ul style="list-style:none; padding:0; margin:0;">
-        <li>Press the <b>Spacebar</b> to flap your bird.</li>
-        <li>Avoid hitting the green pipes.</li>
-        <li>Each pipe you pass earns you 1 point.</li>
-        <li>When you die, the game will restart after 5 seconds.</li>
-      </ul>
-    </div>
-    <canvas id="gameCanvas" width="320" height="480"></canvas>
-  </main>
-
-  <footer>
-    <p>Made with ❤️ | Hosted on GitHub Pages</p>
-  </footer>
-
-  <script>
-    // ====== Visitor Counter using countapi ======
-    const counterEl = document.getElementById("viewCount");
-    fetch("https://api.countapi.xyz/hit/steven-vazny-flappy/visits")
-      .then(res => res.json())
-      .then(data => {
-        counterEl.textContent = data.value;
-      })
-      .catch(() => {
-        counterEl.textContent = "N/A";
-      });
-
-    // ====== Flappy Bird Game ======
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
-
-    let frames = 0;
-
-    const bird = {
-      x: 50,
-      y: 150,
-      w: 34,
-      h: 26,
-      gravity: 0.25,
-      jump: 4.6,
-      speed: 0,
-      draw: function () {
-        ctx.fillStyle = "yellow";
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.w / 2, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.closePath();
-      },
-      flap: function () {
-        this.speed = -this.jump;
-      },
-      update: function () {
-        this.speed += this.gravity;
-        this.y += this.speed;
-
-        if (this.y + this.h / 2 >= canvas.height) {
-          this.y = canvas.height - this.h / 2;
-          this.speed = 0;
-          if (!gameOver) triggerGameOver();
-        }
-      }
-    };
-
-    const pipes = [];
-    const pipeWidth = 50;
-    const pipeGap = 100;
-    let score = 0;
-    let gameOver = false;
-    let restartTimer = null;
-
-    function drawPipes() {
-      ctx.fillStyle = "green";
-      for (let i = 0; i < pipes.length; i++) {
-        let p = pipes[i];
-        ctx.fillRect(p.x, 0, pipeWidth, p.top);
-        ctx.fillRect(p.x, p.top + pipeGap, pipeWidth, canvas.height - p.top - pipeGap);
-      }
-    }
-
-    function updatePipes() {
-      if (frames % 90
+      <p>
