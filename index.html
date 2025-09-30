@@ -23,7 +23,7 @@
     main {
       padding: 20px;
     }
-    .instructions {
+    .instructions, .counter {
       margin: 10px auto 20px auto;
       padding: 12px;
       max-width: 480px;
@@ -57,6 +57,10 @@
   </header>
 
   <main>
+    <div class="counter">
+      <p>👀 Visitors: <span id="viewCount">Loading...</span></p>
+    </div>
+
     <h2>Flappy Bird Game</h2>
     <div class="instructions">
       <p><strong>How to Play:</strong></p>
@@ -75,6 +79,18 @@
   </footer>
 
   <script>
+    // ====== Visitor Counter using countapi ======
+    const counterEl = document.getElementById("viewCount");
+    fetch("https://api.countapi.xyz/hit/steven-vazny-flappy/visits")
+      .then(res => res.json())
+      .then(data => {
+        counterEl.textContent = data.value;
+      })
+      .catch(() => {
+        counterEl.textContent = "N/A";
+      });
+
+    // ====== Flappy Bird Game ======
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
@@ -115,4 +131,16 @@
     const pipeGap = 100;
     let score = 0;
     let gameOver = false;
-    let restartTimer = nul
+    let restartTimer = null;
+
+    function drawPipes() {
+      ctx.fillStyle = "green";
+      for (let i = 0; i < pipes.length; i++) {
+        let p = pipes[i];
+        ctx.fillRect(p.x, 0, pipeWidth, p.top);
+        ctx.fillRect(p.x, p.top + pipeGap, pipeWidth, canvas.height - p.top - pipeGap);
+      }
+    }
+
+    function updatePipes() {
+      if (frames % 90
