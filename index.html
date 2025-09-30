@@ -67,6 +67,13 @@
       color: black;
       font-weight: bold;
     }
+    .gif-container {
+      margin-top: 15px;
+    }
+    .gif-container img {
+      max-width: 100%;
+      border-radius: 8px;
+    }
   </style>
 </head>
 <body>
@@ -87,10 +94,13 @@
       <canvas id="gameCanvas" width="320" height="480"></canvas>
     </div>
 
-    <!-- Calendar -->
+    <!-- Calendar + GIF -->
     <div class="calendar-section">
       <h2>Calendar</h2>
       <table id="calendar"></table>
+      <div class="gif-container">
+        <img src="giphy.gif" alt="Hockey GIF">
+      </div>
     </div>
   </main>
 
