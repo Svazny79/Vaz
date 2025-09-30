@@ -97,4 +97,218 @@
 
     <h2>Flappy Bird Game</h2>
     <div class="instructions">
-      <p>
+      <p><strong>How to Play:</strong></p>
+      <ul style="list-style:none; padding:0; margin:0;">
+        <li>Press the <b>Spacebar</b> to start and flap your bird.</li>
+        <li>Avoid hitting the green pipes.</li>
+        <li>Each pipe you pass earns you 1 point.</li>
+        <li>When you die, the game will restart after 5 seconds.</li>
+      </ul>
+    </div>
+
+    <div class="game-layout">
+      <canvas id="gameCanvas" width="320" height="480"></canvas>
+      <div class="calendar">
+        <h3 id="cal-title"></h3>
+        <table id="calendar-table"></table>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>Made with ❤️ | Hosted on GitHub Pages</p>
+  </footer>
+
+  <script>
+    // ===== Visitor Counter =====
+    const counterEl = document.getElementById("viewCount");
+    fetch("https://api.countapi.xyz/hit/steven-vazny-flappy-bird/visits")
+      .then(res => res.json())
+      .then(data => counterEl.textContent = data.value)
+      .catch(() => counterEl.textContent = "N/A");
+
+    // ===== Calendar =====
+    function buildCalendar() {
+      const now = new Date();
+      const month = now.getMonth();
+      const year = now.getFullYear();
+      const today = now.getDate();
+
+      const monthNames = [
+        "January","February","March","April","May","June",
+        "July","August","September","October","November","December"
+      ];
+      document.getElementById("cal-title").textContent = monthNames[month] + " " + year;
+
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      let table = "<tr>";
+      const dayNames = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+      for (let d of dayNames) table += "<th>" + d + "</th>";
+      table += "</tr><tr>";
+
+      for (let i = 0; i < firstDay; i++) table += "<td></td>";
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const isToday = day === today;
+        table += `<td class="${isToday ? "today" : ""}">${day}</td>`;
+        if ((day + firstDay) % 7 === 0) table += "</tr><tr>";
+      }
+
+      table += "</tr>";
+      document.getElementById("calendar-table").innerHTML = table;
+    }
+    buildCalendar();
+
+    // ===== Flappy Bird =====
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let frames = 0;
+    let gameStarted = false;
+    let gameOver = false;
+    let restartTimer = null;
+    let score = 0;
+    let bestScore = 0;
+    const pipes = [];
+
+    const bird = {
+      x: 50,
+      y: 150,
+      w: 34,
+      h: 26,
+      gravity: 0.25,
+      jump: 4.6,
+      speed: 0,
+      draw: function () {
+        ctx.fillStyle = "yellow";
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.w / 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.closePath();
+      },
+      flap: function () {
+        this.speed = -this.jump;
+      },
+      update: function () {
+        this.speed += this.gravity;
+        this.y += this.speed;
+
+        if (this.y + this.h / 2 >= canvas.height) {
+          this.y = canvas.height - this.h / 2;
+          this.speed = 0;
+          if (!gameOver) triggerGameOver();
+        }
+      }
+    };
+
+    function drawPipes() {
+      ctx.fillStyle = "green";
+      for (let p of pipes) {
+        ctx.fillRect(p.x, 0, 50, p.top);
+        ctx.fillRect(p.x, p.top + 100, 50, canvas.height - p.top - 100);
+      }
+    }
+
+    function updatePipes() {
+      if (frames % 90 === 0) {
+        let top = Math.floor(Math.random() * (canvas.height - 150)) + 20;
+        pipes.push({ x: canvas.width, top: top });
+      }
+
+      for (let i = 0; i < pipes.length; i++) {
+        let p = pipes[i];
+        p.x -= 2;
+
+        if (
+          bird.x + bird.w / 2 > p.x &&
+          bird.x - bird.w / 2 < p.x + 50 &&
+          (bird.y - bird.h / 2 < p.top || bird.y + bird.h / 2 > p.top + 100)
+        ) {
+          if (!gameOver) triggerGameOver();
+        }
+
+        if (p.x + 50 === bird.x) score++;
+
+        if (p.x + 50 < 0) pipes.shift();
+      }
+    }
+
+    function drawScore() {
+      ctx.fillStyle = "white";
+      ctx.font = "20px Arial";
+      ctx.fillText("Score: " + score, 10, 25);
+      ctx.fillText("Best: " + bestScore, 220, 25);
+
+      if (gameOver) {
+        ctx.font = "28px Arial";
+        ctx.fillText("GAME OVER!", 70, canvas.height / 2);
+      }
+    }
+
+    function drawStartScreen() {
+      ctx.fillStyle = "#70c5ce";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "white";
+      ctx.font = "22px Arial";
+      ctx.fillText("Press SPACE to Start", 60, canvas.height / 2);
+    }
+
+    function draw() {
+      ctx.fillStyle = "#70c5ce";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      bird.draw();
+      drawPipes();
+      drawScore();
+    }
+
+    function update() {
+      if (!gameStarted) return;
+      if (!gameOver) {
+        bird.update();
+        updatePipes();
+      }
+    }
+
+    function loop() {
+      if (!gameStarted) {
+        drawStartScreen();
+      } else {
+        update();
+        draw();
+        frames++;
+      }
+      requestAnimationFrame(loop);
+    }
+
+    function triggerGameOver() {
+      gameOver = true;
+      if (score > bestScore) bestScore = score;
+      clearTimeout(restartTimer);
+      restartTimer = setTimeout(resetGame, 5000);
+    }
+
+    function resetGame() {
+      pipes.length = 0;
+      bird.y = 150;
+      bird.speed = 0;
+      score = 0;
+      frames = 0;
+      gameOver = false;
+    }
+
+    document.addEventListener("keydown", function (evt) {
+      if (evt.code === "Space") {
+        if (!gameStarted) {
+          gameStarted = true;
+        } else if (!gameOver) {
+          bird.flap();
+        }
+      }
+    });
+
+    loop();
+  </script>
+</body>
+</html>
