@@ -70,9 +70,9 @@
     .gif-container {
       margin-top: 15px;
     }
-    .gif-container img {
-      max-width: 100%;
+    .gif-container img, .gif-container iframe {
       border-radius: 8px;
+      max-width: 100%;
     }
   </style>
 </head>
@@ -94,12 +94,23 @@
       <canvas id="gameCanvas" width="320" height="480"></canvas>
     </div>
 
-    <!-- Calendar + GIF -->
+    <!-- Calendar + GIFs -->
     <div class="calendar-section">
       <h2>Calendar</h2>
       <table id="calendar"></table>
+
+      <!-- Oilers GIF (local) -->
       <div class="gif-container">
-        <img src="giphy.gif" alt="Hockey GIF">
+        <img src="giphy.gif" alt="Oilers Celebration GIF" width="300" height="200">
+      </div>
+
+      <!-- Blackhawks GIF (embed) -->
+      <div class="gif-container">
+        <iframe src="https://giphy.com/embed/OOlLpkrM5B9dw8GWtR" 
+                width="300" height="200" 
+                frameborder="0" 
+                class="giphy-embed" 
+                allowfullscreen></iframe>
       </div>
     </div>
   </main>
