@@ -64,7 +64,7 @@
         <li>Press the <b>Spacebar</b> to flap your bird.</li>
         <li>Avoid hitting the green pipes.</li>
         <li>Each pipe you pass earns you 1 point.</li>
-        <li>If you crash, press <b>Spacebar</b> to restart.</li>
+        <li>When you die, the game will restart after 5 seconds.</li>
       </ul>
     </div>
     <canvas id="gameCanvas" width="320" height="480"></canvas>
@@ -79,9 +79,7 @@
     const ctx = canvas.getContext("2d");
 
     let frames = 0;
-    const DEGREE = Math.PI / 180;
 
-    // Load bird
     const bird = {
       x: 50,
       y: 150,
@@ -90,7 +88,6 @@
       gravity: 0.25,
       jump: 4.6,
       speed: 0,
-      rotation: 0,
       draw: function () {
         ctx.fillStyle = "yellow";
         ctx.beginPath();
@@ -108,7 +105,7 @@
         if (this.y + this.h / 2 >= canvas.height) {
           this.y = canvas.height - this.h / 2;
           this.speed = 0;
-          gameOver = true;
+          if (!gameOver) triggerGameOver();
         }
       }
     };
@@ -118,94 +115,4 @@
     const pipeGap = 100;
     let score = 0;
     let gameOver = false;
-
-    function drawPipes() {
-      ctx.fillStyle = "green";
-      for (let i = 0; i < pipes.length; i++) {
-        let p = pipes[i];
-        ctx.fillRect(p.x, 0, pipeWidth, p.top);
-        ctx.fillRect(p.x, p.top + pipeGap, pipeWidth, canvas.height - p.top - pipeGap);
-      }
-    }
-
-    function updatePipes() {
-      if (frames % 90 === 0) {
-        let top = Math.floor(Math.random() * (canvas.height - pipeGap - 50)) + 20;
-        pipes.push({ x: canvas.width, top: top });
-      }
-
-      for (let i = 0; i < pipes.length; i++) {
-        let p = pipes[i];
-        p.x -= 2;
-
-        // Collision
-        if (
-          bird.x + bird.w / 2 > p.x &&
-          bird.x - bird.w / 2 < p.x + pipeWidth &&
-          (bird.y - bird.h / 2 < p.top ||
-            bird.y + bird.h / 2 > p.top + pipeGap)
-        ) {
-          gameOver = true;
-        }
-
-        if (p.x + pipeWidth === bird.x) {
-          score++;
-        }
-
-        if (p.x + pipeWidth < 0) {
-          pipes.shift();
-        }
-      }
-    }
-
-    function drawScore() {
-      ctx.fillStyle = "white";
-      ctx.font = "20px Arial";
-      ctx.fillText("Score: " + score, 10, 25);
-      if (gameOver) {
-        ctx.fillText("Game Over! Press Space to Restart", 10, canvas.height / 2);
-      }
-    }
-
-    function draw() {
-      ctx.fillStyle = "#70c5ce";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      bird.draw();
-      drawPipes();
-      drawScore();
-    }
-
-    function update() {
-      if (!gameOver) {
-        bird.update();
-        updatePipes();
-      }
-    }
-
-    function loop() {
-      update();
-      draw();
-      frames++;
-      requestAnimationFrame(loop);
-    }
-
-    document.addEventListener("keydown", function (evt) {
-      if (evt.code === "Space") {
-        if (gameOver) {
-          // reset
-          pipes.length = 0;
-          bird.y = 150;
-          bird.speed = 0;
-          score = 0;
-          gameOver = false;
-        } else {
-          bird.flap();
-        }
-      }
-    });
-
-    loop();
-  </script>
-</body>
-</html>
+    let restartTimer = nul
