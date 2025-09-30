@@ -17,7 +17,20 @@
       background: #09192c;
     }
     header h1 { margin: 0; font-size: 2rem; }
-    main { padding: 20px; }
+    main {
+      padding: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+    .game-section, .calendar-section {
+      background: #132d50;
+      padding: 15px;
+      border-radius: 10px;
+      flex: 1 1 300px;
+      max-width: 400px;
+    }
     canvas {
       background: #70c5ce;
       display: block;
@@ -28,9 +41,23 @@
     .instructions {
       margin: 15px auto;
       padding: 10px;
-      max-width: 480px;
-      background: #132d50;
+      background: #0d243f;
       border-radius: 8px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #fff;
+      padding: 5px;
+      text-align: center;
+    }
+    th { background: #09192c; }
+    td.today {
+      background: #ffcc00;
+      color: black;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -40,15 +67,26 @@
   </header>
 
   <main>
-    <h2>Flappy Bird Game</h2>
-    <div class="instructions">
-      <p><b>Press SPACE to start & flap.</b><br>Survive the pipes and beat your high score!<br>
-      After <b>Game Over</b>, press SPACE again to restart.</p>
+    <!-- Game -->
+    <div class="game-section">
+      <h2>Flappy Bird Game</h2>
+      <div class="instructions">
+        <p><b>Press SPACE to flap.</b><br>
+        Survive the pipes and beat your high score!<br>
+        Game restarts automatically 2 seconds after <b>Game Over</b>.</p>
+      </div>
+      <canvas id="gameCanvas" width="320" height="480"></canvas>
     </div>
-    <canvas id="gameCanvas" width="320" height="480"></canvas>
+
+    <!-- Calendar -->
+    <div class="calendar-section">
+      <h2>Calendar</h2>
+      <table id="calendar"></table>
+    </div>
   </main>
 
   <script>
+    // ===== Flappy Bird =====
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
@@ -116,8 +154,6 @@
       if (gameOver) {
         ctx.font = "28px Arial";
         ctx.fillText("GAME OVER!", 70, canvas.height / 2);
-        ctx.font = "18px Arial";
-        ctx.fillText("Press SPACE to Restart", 60, canvas.height / 2 + 40);
       }
     }
 
@@ -159,6 +195,7 @@
     function triggerGameOver() {
       gameOver = true;
       if (score > bestScore) bestScore = score;
+      setTimeout(resetGame, 2000); // auto restart after 2s
     }
 
     function resetGame() {
@@ -175,15 +212,46 @@
       if (e.code === "Space") {
         if (!gameStarted) {
           gameStarted = true;
-        } else if (gameOver) {
-          resetGame();
-        } else {
+        } else if (!gameOver) {
           bird.flap();
         }
       }
     });
 
     loop();
+
+    // ===== Calendar =====
+    function generateCalendar() {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = today.getMonth();
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      let table = "<tr>";
+      const days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+      for (let d of days) {
+        table += "<th>" + d + "</th>";
+      }
+      table += "</tr><tr>";
+
+      for (let i = 0; i < firstDay; i++) {
+        table += "<td></td>";
+      }
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const currentDay = new Date(year, month, day).getDay();
+        const isToday = day === today.getDate();
+        table += `<td class="${isToday ? "today" : ""}">${day}</td>`;
+        if (currentDay === 6 && day < daysInMonth) {
+          table += "</tr><tr>";
+        }
+      }
+
+      table += "</tr>";
+      document.getElementById("calendar").innerHTML = table;
+    }
+    generateCalendar();
   </script>
 </body>
 </html>
