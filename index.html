@@ -7,7 +7,6 @@
   <style>
     body {
       font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
-      line-height: 1.4;
       margin: 0;
       background: #f6f8fb;
       color: #111;
@@ -39,10 +38,6 @@
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 12px;
     }
-    .player-grid figure {
-      margin: 0;
-      text-align: center;
-    }
     .player-grid img {
       width: 100%;
       height: 240px;
@@ -55,26 +50,22 @@
       height: auto;
       border-radius: 6px;
     }
+    .gif-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    .gif-grid img {
+      width: 100%;
+      height: auto;
+      border-radius: 6px;
+      background: #eee;
+    }
     .site-footer {
       padding: 14px;
       text-align: center;
       font-size: 13px;
       color: #555;
-      background: transparent;
-    }
-    .social a {
-      color: white;
-      margin: 0 6px;
-      text-decoration: none;
-    }
-    #sticks-img {
-      width: 120px;
-      height: auto;
-      margin-top: 12px;
-    }
-    .note {
-      font-size: 13px;
-      color: #666;
     }
   </style>
 </head>
@@ -99,4 +90,45 @@
       <h2>Hockey Players I Follow</h2>
       <div class="player-grid">
         <figure>
-          <img src="i
+          <img src="images/players/Sidney_Crosby_2019-01-06_1.jpg" alt="Sidney Crosby">
+          <figcaption>Sidney Crosby</figcaption>
+        </figure>
+        <figure>
+          <img src="images/players/71-celebrini,-macklin-(103)-ep.jpg" alt="Macklin Celebrini">
+          <figcaption>Macklin Celebrini</figcaption>
+        </figure>
+        <figure>
+          <img src="images/players/Connor_McDavid_2-FEB-2022.jpg" alt="Connor McDavid">
+          <figcaption>Connor McDavid</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="standings" class="card">
+      <h2>2013 Elite Eagles — Standings</h2>
+      <img src="images/standings.png" alt="2013 Elite Eagles standings" id="standings-img">
+      <p class="note">Source: Eastern Hockey Federation standings</p>
+    </section>
+
+    <section id="gifs" class="card">
+      <h2>Hockey GIFs</h2>
+      <div class="gif-grid">
+        <!-- example GIFs: replace src with your actual gif file paths or URLs -->
+        <img src="images/gifs/hockey1.gif" alt="Hockey highlight GIF 1">
+        <img src="images/gifs/hockey2.gif" alt="Hockey highlight GIF 2">
+        <img src="images/gifs/hockey3.gif" alt="Hockey highlight GIF 3">
+      </div>
+    </section>
+
+    <section id="instagram" class="card">
+      <h2>Instagram</h2>
+      <p>Account: <a href="https://www.instagram.com/svazny79/" target="_blank" rel="noopener">@svazny79</a></p>
+      <p><strong>Follower count:</strong> (Insert manually or via API)</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Made with ❤️ — Host on GitHub Pages by creating a repo named <code>your-username.github.io</code> and pushing this file plus images.</p>
+  </footer>
+</body>
+</html>
