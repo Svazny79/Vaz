@@ -3,132 +3,188 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Steven Vazny — Profile & Hockey</title>
+  <title>Steven Vazny — Flappy Bird</title>
   <style>
     body {
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+      font-family: Arial, sans-serif;
       margin: 0;
-      background: #f6f8fb;
-      color: #111;
-    }
-    .site-header {
       background: #0b2340;
       color: white;
-      padding: 24px 16px;
       text-align: center;
     }
-    .site-header h1 {
+    header {
+      padding: 20px;
+      background: #09192c;
+    }
+    header h1 {
       margin: 0;
-      font-size: clamp(20px, 4vw, 34px);
+      font-size: 2rem;
     }
-    .content {
-      max-width: 980px;
+    canvas {
+      background: #70c5ce;
+      display: block;
       margin: 20px auto;
-      padding: 0 12px;
-    }
-    .card {
-      background: white;
+      border: 4px solid #09192c;
       border-radius: 10px;
-      padding: 16px;
-      margin: 14px 0;
-      box-shadow: 0 6px 18px rgba(10,20,40,0.06);
     }
-    .player-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 12px;
+    footer {
+      margin: 20px 0;
+      font-size: 14px;
+      color: #ccc;
     }
-    .player-grid img {
-      width: 100%;
-      height: 240px;
-      object-fit: cover;
-      border-radius: 6px;
-      background: #ddd;
-    }
-    #schedule-img, #standings-img {
-      width: 100%;
-      height: auto;
-      border-radius: 6px;
-    }
-    .gif-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 12px;
-    }
-    .gif-grid img {
-      width: 100%;
-      height: auto;
-      border-radius: 6px;
-      background: #eee;
-    }
-    .site-footer {
-      padding: 14px;
-      text-align: center;
-      font-size: 13px;
-      color: #555;
+    a {
+      color: #ffdd57;
+      text-decoration: none;
     }
   </style>
 </head>
 <body>
-  <header class="site-header">
+  <header>
     <h1>Steven Vazny</h1>
-    <div class="sticks">
-      <img src="images/players/hockey_sticks.png" alt="Crossed hockey sticks" id="sticks-img">
-    </div>
-    <nav class="social">
-      <a href="https://www.instagram.com/svazny79/" target="_blank" rel="noopener">Instagram</a>
-    </nav>
+    <p><a href="https://www.instagram.com/svazny79/" target="_blank">@svazny79</a></p>
   </header>
 
-  <main class="content">
-    <section id="schedule" class="card">
-      <h2>School Schedule</h2>
-      <img src="images/schedule.png" alt="Weekly school schedule" id="schedule-img">
-    </section>
-
-    <section id="players" class="card">
-      <h2>Hockey Players I Follow</h2>
-      <div class="player-grid">
-        <figure>
-          <img src="images/players/Sidney_Crosby_2019-01-06_1.jpg" alt="Sidney Crosby">
-          <figcaption>Sidney Crosby</figcaption>
-        </figure>
-        <figure>
-          <img src="images/players/71-celebrini,-macklin-(103)-ep.jpg" alt="Macklin Celebrini">
-          <figcaption>Macklin Celebrini</figcaption>
-        </figure>
-        <figure>
-          <img src="images/players/Connor_McDavid_2-FEB-2022.jpg" alt="Connor McDavid">
-          <figcaption>Connor McDavid</figcaption>
-        </figure>
-      </div>
-    </section>
-
-    <section id="standings" class="card">
-      <h2>2013 Elite Eagles — Standings</h2>
-      <img src="images/standings.png" alt="2013 Elite Eagles standings" id="standings-img">
-      <p class="note">Source: Eastern Hockey Federation standings</p>
-    </section>
-
-    <section id="gifs" class="card">
-      <h2>Hockey GIFs</h2>
-      <div class="gif-grid">
-        <!-- example GIFs: replace src with your actual gif file paths or URLs -->
-        <img src="images/gifs/hockey1.gif" alt="Hockey highlight GIF 1">
-        <img src="images/gifs/hockey2.gif" alt="Hockey highlight GIF 2">
-        <img src="images/gifs/hockey3.gif" alt="Hockey highlight GIF 3">
-      </div>
-    </section>
-
-    <section id="instagram" class="card">
-      <h2>Instagram</h2>
-      <p>Account: <a href="https://www.instagram.com/svazny79/" target="_blank" rel="noopener">@svazny79</a></p>
-      <p><strong>Follower count:</strong> (Insert manually or via API)</p>
-    </section>
+  <main>
+    <h2>Flappy Bird Game</h2>
+    <canvas id="gameCanvas" width="320" height="480"></canvas>
   </main>
 
-  <footer class="site-footer">
-    <p>Made with ❤️ — Host on GitHub Pages by creating a repo named <code>your-username.github.io</code> and pushing this file plus images.</p>
+  <footer>
+    <p>Made with ❤️ | Hosted on GitHub Pages</p>
   </footer>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let frames = 0;
+    const DEGREE = Math.PI / 180;
+
+    // Load bird
+    const bird = {
+      x: 50,
+      y: 150,
+      w: 34,
+      h: 26,
+      gravity: 0.25,
+      jump: 4.6,
+      speed: 0,
+      rotation: 0,
+      draw: function () {
+        ctx.fillStyle = "yellow";
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.w / 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.closePath();
+      },
+      flap: function () {
+        this.speed = -this.jump;
+      },
+      update: function () {
+        this.speed += this.gravity;
+        this.y += this.speed;
+
+        if (this.y + this.h / 2 >= canvas.height) {
+          this.y = canvas.height - this.h / 2;
+          this.speed = 0;
+          gameOver = true;
+        }
+      }
+    };
+
+    const pipes = [];
+    const pipeWidth = 50;
+    const pipeGap = 100;
+    let score = 0;
+    let gameOver = false;
+
+    function drawPipes() {
+      ctx.fillStyle = "green";
+      for (let i = 0; i < pipes.length; i++) {
+        let p = pipes[i];
+        ctx.fillRect(p.x, 0, pipeWidth, p.top);
+        ctx.fillRect(p.x, p.top + pipeGap, pipeWidth, canvas.height - p.top - pipeGap);
+      }
+    }
+
+    function updatePipes() {
+      if (frames % 90 === 0) {
+        let top = Math.floor(Math.random() * (canvas.height - pipeGap - 50)) + 20;
+        pipes.push({ x: canvas.width, top: top });
+      }
+
+      for (let i = 0; i < pipes.length; i++) {
+        let p = pipes[i];
+        p.x -= 2;
+
+        // Collision
+        if (
+          bird.x + bird.w / 2 > p.x &&
+          bird.x - bird.w / 2 < p.x + pipeWidth &&
+          (bird.y - bird.h / 2 < p.top ||
+            bird.y + bird.h / 2 > p.top + pipeGap)
+        ) {
+          gameOver = true;
+        }
+
+        if (p.x + pipeWidth === bird.x) {
+          score++;
+        }
+
+        if (p.x + pipeWidth < 0) {
+          pipes.shift();
+        }
+      }
+    }
+
+    function drawScore() {
+      ctx.fillStyle = "white";
+      ctx.font = "20px Arial";
+      ctx.fillText("Score: " + score, 10, 25);
+      if (gameOver) {
+        ctx.fillText("Game Over! Press Space to Restart", 10, canvas.height / 2);
+      }
+    }
+
+    function draw() {
+      ctx.fillStyle = "#70c5ce";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      bird.draw();
+      drawPipes();
+      drawScore();
+    }
+
+    function update() {
+      if (!gameOver) {
+        bird.update();
+        updatePipes();
+      }
+    }
+
+    function loop() {
+      update();
+      draw();
+      frames++;
+      requestAnimationFrame(loop);
+    }
+
+    document.addEventListener("keydown", function (evt) {
+      if (evt.code === "Space") {
+        if (gameOver) {
+          // reset
+          pipes.length = 0;
+          bird.y = 150;
+          bird.speed = 0;
+          score = 0;
+          gameOver = false;
+        } else {
+          bird.flap();
+        }
+      }
+    });
+
+    loop();
+  </script>
 </body>
 </html>
