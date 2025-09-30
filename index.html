@@ -42,20 +42,19 @@
   <main>
     <h2>Flappy Bird Game</h2>
     <div class="instructions">
-      <p><b>Press SPACE to start & flap.</b><br>Survive the pipes and beat your high score!</p>
+      <p><b>Press SPACE to start & flap.</b><br>Survive the pipes and beat your high score!<br>
+      After <b>Game Over</b>, press SPACE again to restart.</p>
     </div>
     <canvas id="gameCanvas" width="320" height="480"></canvas>
   </main>
 
   <script>
-    // ===== Flappy Bird =====
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
     let frames = 0;
     let gameStarted = false;
     let gameOver = false;
-    let restartTimer = null;
     let score = 0;
     let bestScore = 0;
     const pipes = [];
@@ -117,6 +116,8 @@
       if (gameOver) {
         ctx.font = "28px Arial";
         ctx.fillText("GAME OVER!", 70, canvas.height / 2);
+        ctx.font = "18px Arial";
+        ctx.fillText("Press SPACE to Restart", 60, canvas.height / 2 + 40);
       }
     }
 
@@ -158,8 +159,6 @@
     function triggerGameOver() {
       gameOver = true;
       if (score > bestScore) bestScore = score;
-      clearTimeout(restartTimer);
-      restartTimer = setTimeout(resetGame, 5000);
     }
 
     function resetGame() {
@@ -169,12 +168,18 @@
       score = 0;
       frames = 0;
       gameOver = false;
+      gameStarted = true;
     }
 
     document.addEventListener("keydown", e => {
       if (e.code === "Space") {
-        if (!gameStarted) gameStarted = true;
-        else if (!gameOver) bird.flap();
+        if (!gameStarted) {
+          gameStarted = true;
+        } else if (gameOver) {
+          resetGame();
+        } else {
+          bird.flap();
+        }
       }
     });
 
