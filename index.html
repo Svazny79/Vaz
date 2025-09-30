@@ -20,6 +20,18 @@
       margin: 0;
       font-size: 2rem;
     }
+    main {
+      padding: 20px;
+    }
+    .instructions {
+      margin: 10px auto 20px auto;
+      padding: 12px;
+      max-width: 480px;
+      background: #132d50;
+      border-radius: 8px;
+      font-size: 15px;
+      line-height: 1.4;
+    }
     canvas {
       background: #70c5ce;
       display: block;
@@ -46,6 +58,15 @@
 
   <main>
     <h2>Flappy Bird Game</h2>
+    <div class="instructions">
+      <p><strong>How to Play:</strong></p>
+      <ul style="list-style:none; padding:0; margin:0;">
+        <li>Press the <b>Spacebar</b> to flap your bird.</li>
+        <li>Avoid hitting the green pipes.</li>
+        <li>Each pipe you pass earns you 1 point.</li>
+        <li>If you crash, press <b>Spacebar</b> to restart.</li>
+      </ul>
+    </div>
     <canvas id="gameCanvas" width="320" height="480"></canvas>
   </main>
 
