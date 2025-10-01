@@ -45,6 +45,9 @@
       margin: 20px auto;
       border: 4px solid #09192c;
       border-radius: 10px;
+      width: 100%;       /* responsive scaling */
+      height: auto;      /* keep aspect ratio */
+      max-width: 320px;  /* original width */
     }
     .instructions {
       margin: 15px auto;
@@ -83,7 +86,7 @@
     <div class="game-section">
       <h2>Flappy Bird Game</h2>
       <div class="instructions">
-        <p><b>Press SPACE to flap.</b><br>
+        <p><b>Press SPACE (desktop) or TAP (mobile) to flap.</b><br>
         Survive the pipes and beat your high score!<br>
         Game restarts automatically 2 seconds after <b>Game Over</b>.</p>
       </div>
@@ -181,8 +184,8 @@
       ctx.fillStyle = "#70c5ce";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.fillStyle = "white";
-      ctx.font = "22px Arial";
-      ctx.fillText("Press SPACE to Start", 60, canvas.height / 2);
+      ctx.font = "20px Arial";
+      ctx.fillText("Tap or Press SPACE to Start", 35, canvas.height / 2);
     }
 
     function draw() {
@@ -228,15 +231,21 @@
       gameStarted = true;
     }
 
-    document.addEventListener("keydown", e => {
-      if (e.code === "Space") {
-        if (!gameStarted) {
-          gameStarted = true;
-        } else if (!gameOver) {
-          bird.flap();
-        }
+    // Controls: Keyboard + Touch
+    function handleFlap() {
+      if (!gameStarted) {
+        gameStarted = true;
+      } else if (!gameOver) {
+        bird.flap();
       }
+    }
+
+    document.addEventListener("keydown", e => {
+      if (e.code === "Space") handleFlap();
     });
+
+    // Mobile: tap anywhere on the screen
+    document.addEventListener("touchstart", handleFlap);
 
     loop();
 
