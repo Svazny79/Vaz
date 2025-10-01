@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Steven Vazny — Flappy Bird</title>
+  <title>Steven Vazny — Games</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -46,8 +46,9 @@
       width: 100%;
       height: auto;
       max-width: 320px;
+      background: black;
     }
-    #gameCanvas { background: #70c5ce; }  /* Flappy Bird */
+    #gameCanvas { background: #70c5ce; } /* Flappy Bird */
     .instructions {
       margin: 15px auto;
       padding: 10px;
@@ -83,13 +84,23 @@
   <main>
     <!-- Flappy Bird -->
     <div class="game-section">
-      <h2>Flappy Bird Game</h2>
+      <h2>Flappy Bird</h2>
       <div class="instructions">
         <p><b>Press SPACE (desktop) or TAP (mobile) to flap.</b><br>
         Survive the pipes and beat your high score!<br>
         Game restarts automatically 2 seconds after <b>Game Over</b>.</p>
       </div>
       <canvas id="gameCanvas" width="320" height="480"></canvas>
+
+      <!-- Asteroids -->
+      <h2>Asteroids</h2>
+      <div class="instructions">
+        <p><b>Controls:</b><br>
+        ⬅️ ➡️ = rotate<br>
+        ⬆️ = thrust<br>
+        SPACE = shoot / restart</p>
+      </div>
+      <canvas id="asteroidsCanvas" width="320" height="400"></canvas>
     </div>
 
     <!-- Calendar + GIF -->
@@ -140,6 +151,158 @@
     document.addEventListener("keydown",e=>{if(e.code==="Space")handleFlap();});
     document.addEventListener("touchstart",handleFlap);
     loop();
+
+    // ===== Asteroids =====
+    const aCanvas = document.getElementById("asteroidsCanvas");
+    const actx = aCanvas.getContext("2d");
+
+    let ship, asteroids, bullets, aScore, aGameOver;
+
+    function resetAsteroids(){
+      ship = {x:aCanvas.width/2, y:aCanvas.height/2, angle:0, velX:0, velY:0};
+      asteroids = [];
+      bullets = [];
+      aScore = 0;
+      aGameOver = false;
+      for(let i=0;i<5;i++){
+        asteroids.push({x:Math.random()*aCanvas.width,y:Math.random()*aCanvas.height,r:30,dx:(Math.random()*2-1)*1.5,dy:(Math.random()*2-1)*1.5});
+      }
+    }
+
+    function drawShip(){
+      actx.save();
+      actx.translate(ship.x, ship.y);
+      actx.rotate(ship.angle);
+      actx.strokeStyle="white";
+      actx.beginPath();
+      actx.moveTo(10,0);
+      actx.lineTo(-10,-7);
+      actx.lineTo(-10,7);
+      actx.closePath();
+      actx.stroke();
+      actx.restore();
+    }
+
+    function drawAsteroids(){
+      actx.strokeStyle="white";
+      for(let a of asteroids){
+        actx.beginPath();
+        actx.arc(a.x,a.y,a.r,0,Math.PI*2);
+        actx.stroke();
+      }
+    }
+
+    function drawBullets(){
+      actx.fillStyle="white";
+      for(let b of bullets){
+        actx.beginPath();
+        actx.arc(b.x,b.y,2,0,Math.PI*2);
+        actx.fill();
+      }
+    }
+
+    function updateAsteroids(){
+      for(let a of asteroids){
+        a.x+=a.dx;a.y+=a.dy;
+        if(a.x<0) a.x=aCanvas.width;
+        if(a.x>aCanvas.width) a.x=0;
+        if(a.y<0) a.y=aCanvas.height;
+        if(a.y>aCanvas.height) a.y=0;
+      }
+    }
+
+    function updateBullets(){
+      for(let i=bullets.length-1;i>=0;i--){
+        let b=bullets[i];
+        b.x+=b.dx;b.y+=b.dy;b.life--;
+        if(b.life<=0) bullets.splice(i,1);
+      }
+    }
+
+    function checkCollisions(){
+      for(let i=asteroids.length-1;i>=0;i--){
+        let a=asteroids[i];
+        // Ship collision
+        let dist=Math.hypot(ship.x-a.x,ship.y-a.y);
+        if(dist<a.r){
+          aGameOver=true;
+        }
+        // Bullet collision
+        for(let j=bullets.length-1;j>=0;j--){
+          let b=bullets[j];
+          if(Math.hypot(b.x-a.x,b.y-a.y)<a.r){
+            bullets.splice(j,1);
+            aScore+=10;
+            if(a.r>15){
+              asteroids.push({x:a.x,y:a.y,r:a.r/2,dx:(Math.random()*2-1)*2,dy:(Math.random()*2-1)*2});
+              asteroids.push({x:a.x,y:a.y,r:a.r/2,dx:(Math.random()*2-1)*2,dy:(Math.random()*2-1)*2});
+            }
+            asteroids.splice(i,1);
+            break;
+          }
+        }
+      }
+    }
+
+    function loopAsteroids(){
+      actx.fillStyle="black";
+      actx.fillRect(0,0,aCanvas.width,aCanvas.height);
+
+      if(!aGameOver){
+        // Ship physics
+        ship.x+=ship.velX; ship.y+=ship.velY;
+        if(ship.x<0) ship.x=aCanvas.width;
+        if(ship.x>aCanvas.width) ship.x=0;
+        if(ship.y<0) ship.y=aCanvas.height;
+        if(ship.y>aCanvas.height) ship.y=0;
+        ship.velX*=0.99; ship.velY*=0.99;
+
+        drawShip();
+        drawAsteroids();
+        drawBullets();
+        updateAsteroids();
+        updateBullets();
+        checkCollisions();
+
+        actx.fillStyle="white";
+        actx.font="16px Arial";
+        actx.fillText("Score: "+aScore,10,20);
+      } else {
+        actx.fillStyle="white";
+        actx.font="24px Arial";
+        actx.fillText("GAME OVER!",80,180);
+        actx.font="16px Arial";
+        actx.fillText("Press SPACE to Restart",70,210);
+      }
+
+      requestAnimationFrame(loopAsteroids);
+    }
+
+    let keys={};
+    document.addEventListener("keydown",e=>{
+      keys[e.code]=true;
+      if(aGameOver && e.code==="Space"){resetAsteroids();}
+    });
+    document.addEventListener("keyup",e=>{keys[e.code]=false;});
+
+    setInterval(()=>{
+      if(!aGameOver){
+        if(keys["ArrowLeft"]) ship.angle-=0.1;
+        if(keys["ArrowRight"]) ship.angle+=0.1;
+        if(keys["ArrowUp"]){
+          ship.velX+=Math.cos(ship.angle)*0.2;
+          ship.velY+=Math.sin(ship.angle)*0.2;
+        }
+        if(keys["Space"]){
+          if(bullets.length<5){
+            bullets.push({x:ship.x,y:ship.y,dx:Math.cos(ship.angle)*5,dy:Math.sin(ship.angle)*5,life:60});
+          }
+        }
+      }
+    },100);
+
+    resetAsteroids();
+    loopAsteroids();
 
     // ===== Calendar =====
     function generateCalendar(){
