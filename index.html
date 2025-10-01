@@ -263,6 +263,9 @@
     let ballX = pongCanvas.width / 2, ballY = pongCanvas.height / 2;
     let ballSpeedX = 3, ballSpeedY = 3;
 
+    let upPressed = false;
+    let downPressed = false;
+
     function drawPong() {
       pongCtx.fillStyle = "black";
       pongCtx.fillRect(0, 0, pongCanvas.width, pongCanvas.height);
@@ -281,6 +284,10 @@
     }
 
     function updatePong() {
+      // Smooth player movement
+      if (upPressed && playerY > 0) playerY -= 4;
+      if (downPressed && playerY < pongCanvas.height - paddleHeight) playerY += 4;
+
       ballX += ballSpeedX;
       ballY += ballSpeedY;
 
@@ -323,17 +330,14 @@
       requestAnimationFrame(loopPong);
     }
 
-    // Player controls
+    // Player controls (smooth movement)
     document.addEventListener("keydown", e => {
-      if (e.code === "ArrowUp") playerY -= 15;
-      if (e.code === "ArrowDown") playerY += 15;
+      if (e.code === "ArrowUp") upPressed = true;
+      if (e.code === "ArrowDown") downPressed = true;
     });
-
-    // Mobile: touch top/bottom halves
-    pongCanvas.addEventListener("touchstart", e => {
-      const touchY = e.touches[0].clientY - pongCanvas.getBoundingClientRect().top;
-      if (touchY < playerY) playerY -= 20;
-      else playerY += 20;
+    document.addEventListener("keyup", e => {
+      if (e.code === "ArrowUp") upPressed = false;
+      if (e.code === "ArrowDown") downPressed = false;
     });
 
     loopPong();
