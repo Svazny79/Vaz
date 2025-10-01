@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Steven Vazny — Flappy Bird</title>
+  <title>Steven Vazny — Games</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -24,7 +24,6 @@
       text-decoration: none;
       font-size: 1.1rem;
     }
-    header a:hover { text-decoration: underline; }
     main {
       padding: 20px;
       display: flex;
@@ -40,7 +39,6 @@
       max-width: 400px;
     }
     canvas {
-      background: black;
       display: block;
       margin: 20px auto;
       border: 4px solid #09192c;
@@ -49,7 +47,8 @@
       height: auto;
       max-width: 320px;
     }
-    #gameCanvas { background: #70c5ce; } /* Flappy Bird background */
+    #gameCanvas { background: #70c5ce; }  /* Flappy Bird */
+    #snakeCanvas { background: #000; }    /* Snake */
     .instructions {
       margin: 15px auto;
       padding: 10px;
@@ -92,6 +91,15 @@
         Game restarts automatically 2 seconds after <b>Game Over</b>.</p>
       </div>
       <canvas id="gameCanvas" width="320" height="480"></canvas>
+
+      <!-- Snake -->
+      <h2>Snake</h2>
+      <div class="instructions">
+        <p><b>Use ARROW KEYS (desktop) or SWIPE (mobile) to control the snake.</b><br>
+        Eat the food and grow! Don’t hit the walls or yourself.<br>
+        Press <b>SPACE</b> to restart after Game Over.</p>
+      </div>
+      <canvas id="snakeCanvas" width="320" height="320"></canvas>
     </div>
 
     <!-- Calendar + GIF -->
@@ -113,170 +121,141 @@
     // ===== Flappy Bird =====
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
-
-    let frames = 0;
-    let gameStarted = false;
-    let gameOver = false;
-    let score = 0;
-    let bestScore = 0;
+    let frames = 0, gameStarted = false, gameOver = false, score = 0, bestScore = 0;
     const pipes = [];
-
-    const bird = {
-      x: 50, y: 150, w: 34, h: 26,
-      gravity: 0.25, jump: 4.6, speed: 0,
-      draw() {
-        ctx.fillStyle = "yellow";
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.w / 2, 0, Math.PI * 2);
-        ctx.fill();
-      },
-      flap() { this.speed = -this.jump; },
-      update() {
-        this.speed += this.gravity;
-        this.y += this.speed;
-        if (this.y + this.h / 2 >= canvas.height) {
-          this.y = canvas.height - this.h / 2;
-          this.speed = 0;
-          if (!gameOver) triggerGameOver();
-        }
+    const bird = { x:50,y:150,w:34,h:26,gravity:0.25,jump:4.6,speed:0,
+      draw(){ ctx.fillStyle="yellow";ctx.beginPath();ctx.arc(this.x,this.y,this.w/2,0,Math.PI*2);ctx.fill(); },
+      flap(){ this.speed=-this.jump; },
+      update(){ this.speed+=this.gravity; this.y+=this.speed;
+        if(this.y+this.h/2>=canvas.height){ this.y=canvas.height-this.h/2;this.speed=0;if(!gameOver) triggerGameOver();}
       }
     };
-
-    function drawPipes() {
-      ctx.fillStyle = "green";
-      for (let p of pipes) {
-        ctx.fillRect(p.x, 0, 50, p.top);
-        ctx.fillRect(p.x, p.top + 100, 50, canvas.height - p.top - 100);
-      }
+    function drawPipes(){ctx.fillStyle="green";for(let p of pipes){ctx.fillRect(p.x,0,50,p.top);ctx.fillRect(p.x,p.top+100,50,canvas.height-p.top-100);}}
+    function updatePipes(){if(frames%90===0){let top=Math.floor(Math.random()*(canvas.height-150))+20;pipes.push({x:canvas.width,top});}
+      for(let i=0;i<pipes.length;i++){let p=pipes[i];p.x-=2;
+        if(bird.x+bird.w/2>p.x&&bird.x-bird.w/2<p.x+50&&(bird.y-bird.h/2<p.top||bird.y+bird.h/2>p.top+100)){if(!gameOver) triggerGameOver();}
+        if(p.x+50===bird.x) score++;if(p.x+50<0) pipes.shift();}
     }
-
-    function updatePipes() {
-      if (frames % 90 === 0) {
-        let top = Math.floor(Math.random() * (canvas.height - 150)) + 20;
-        pipes.push({ x: canvas.width, top: top });
-      }
-      for (let i = 0; i < pipes.length; i++) {
-        let p = pipes[i];
-        p.x -= 2;
-        if (
-          bird.x + bird.w / 2 > p.x &&
-          bird.x - bird.w / 2 < p.x + 50 &&
-          (bird.y - bird.h / 2 < p.top || bird.y + bird.h / 2 > p.top + 100)
-        ) {
-          if (!gameOver) triggerGameOver();
-        }
-        if (p.x + 50 === bird.x) score++;
-        if (p.x + 50 < 0) pipes.shift();
-      }
+    function drawScore(){ctx.fillStyle="white";ctx.font="20px Arial";ctx.fillText("Score: "+score,10,25);ctx.fillText("Best: "+bestScore,220,25);
+      if(gameOver){ctx.font="28px Arial";ctx.fillText("GAME OVER!",70,canvas.height/2);}
     }
-
-    function drawScore() {
-      ctx.fillStyle = "white";
-      ctx.font = "20px Arial";
-      ctx.fillText("Score: " + score, 10, 25);
-      ctx.fillText("Best: " + bestScore, 220, 25);
-      if (gameOver) {
-        ctx.font = "28px Arial";
-        ctx.fillText("GAME OVER!", 70, canvas.height / 2);
-      }
-    }
-
-    function drawStartScreen() {
-      ctx.fillStyle = "#70c5ce";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "white";
-      ctx.font = "20px Arial";
-      ctx.fillText("Tap or Press SPACE to Start", 35, canvas.height / 2);
-    }
-
-    function draw() {
-      ctx.fillStyle = "#70c5ce";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      bird.draw();
-      drawPipes();
-      drawScore();
-    }
-
-    function update() {
-      if (!gameStarted) return;
-      if (!gameOver) {
-        bird.update();
-        updatePipes();
-      }
-    }
-
-    function loop() {
-      if (!gameStarted) {
-        drawStartScreen();
-      } else {
-        update();
-        draw();
-        frames++;
-      }
-      requestAnimationFrame(loop);
-    }
-
-    function triggerGameOver() {
-      gameOver = true;
-      if (score > bestScore) bestScore = score;
-      setTimeout(resetGame, 2000); // auto restart after 2s
-    }
-
-    function resetGame() {
-      pipes.length = 0;
-      bird.y = 150;
-      bird.speed = 0;
-      score = 0;
-      frames = 0;
-      gameOver = false;
-      gameStarted = true;
-    }
-
-    function handleFlap() {
-      if (!gameStarted) {
-        gameStarted = true;
-      } else if (!gameOver) {
-        bird.flap();
-      }
-    }
-
-    document.addEventListener("keydown", e => {
-      if (e.code === "Space") handleFlap();
-    });
-    document.addEventListener("touchstart", handleFlap);
-
+    function drawStartScreen(){ctx.fillStyle="#70c5ce";ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle="white";ctx.font="20px Arial";ctx.fillText("Tap or Press SPACE to Start",35,canvas.height/2);}
+    function draw(){ctx.fillStyle="#70c5ce";ctx.fillRect(0,0,canvas.width,canvas.height);bird.draw();drawPipes();drawScore();}
+    function update(){if(!gameStarted) return;if(!gameOver){bird.update();updatePipes();}}
+    function loop(){if(!gameStarted) drawStartScreen(); else{update();draw();frames++;} requestAnimationFrame(loop);}
+    function triggerGameOver(){gameOver=true;if(score>bestScore)bestScore=score;setTimeout(resetGame,2000);}
+    function resetGame(){pipes.length=0;bird.y=150;bird.speed=0;score=0;frames=0;gameOver=false;gameStarted=true;}
+    function handleFlap(){if(!gameStarted){gameStarted=true;} else if(!gameOver){bird.flap();}}
+    document.addEventListener("keydown",e=>{if(e.code==="Space")handleFlap();});
+    document.addEventListener("touchstart",handleFlap);
     loop();
 
-    // ===== Calendar =====
-    function generateCalendar() {
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = today.getMonth();
-      const firstDay = new Date(year, month, 1).getDay();
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
+    // ===== Snake =====
+    const snakeCanvas=document.getElementById("snakeCanvas");
+    const sctx=snakeCanvas.getContext("2d");
+    const grid=16;
+    let snake=[{x:160,y:160}];
+    let dx=grid,dy=0;
+    let food={x:320/2,y:320/2};
+    let snakeScore=0, snakeHigh=0, snakeFrames=0;
+    let snakeOver=false;
 
-      let table = "<tr>";
-      const days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-      for (let d of days) {
-        table += "<th>" + d + "</th>";
-      }
-      table += "</tr><tr>";
+    function gameSnake(){
+      requestAnimationFrame(gameSnake);
+      if(++snakeFrames<4) return; // slow down snake
+      snakeFrames=0;
+      sctx.fillStyle="black";sctx.fillRect(0,0,snakeCanvas.width,snakeCanvas.height);
 
-      for (let i = 0; i < firstDay; i++) {
-        table += "<td></td>";
-      }
-
-      for (let day = 1; day <= daysInMonth; day++) {
-        const currentDay = new Date(year, month, day).getDay();
-        const isToday = day === today.getDate();
-        table += `<td class="${isToday ? "today" : ""}">${day}</td>`;
-        if (currentDay === 6 && day < daysInMonth) {
-          table += "</tr><tr>";
+      if(!snakeOver){
+        snake.unshift({x:snake[0].x+dx,y:snake[0].y+dy});
+        if(snake[0].x===food.x&&snake[0].y===food.y){
+          snakeScore++;
+          if(snakeScore>snakeHigh) snakeHigh=snakeScore;
+          food.x=Math.floor(Math.random()*20)*grid;
+          food.y=Math.floor(Math.random()*20)*grid;
+        } else {
+          snake.pop();
         }
       }
 
-      table += "</tr>";
-      document.getElementById("calendar").innerHTML = table;
+      // Draw snake
+      sctx.fillStyle="lime";
+      snake.forEach(cell=>sctx.fillRect(cell.x,cell.y,grid-1,grid-1));
+
+      // Draw food
+      sctx.fillStyle="red";
+      sctx.fillRect(food.x,food.y,grid-1,grid-1);
+
+      // Collision check
+      if(!snakeOver && (
+        snake[0].x<0||snake[0].x>=snakeCanvas.width||
+        snake[0].y<0||snake[0].y>=snakeCanvas.height||
+        snake.slice(1).some(c=>c.x===snake[0].x&&c.y===snake[0].y)
+      )){
+        snakeOver=true;
+      }
+
+      // Score
+      sctx.fillStyle="white";
+      sctx.font="16px Arial";
+      sctx.fillText("Score: "+snakeScore,5,15);
+      sctx.fillText("Best: "+snakeHigh,220,15);
+
+      // Game Over text
+      if(snakeOver){
+        sctx.font="24px Arial";
+        sctx.fillText("GAME OVER!",90,160);
+        sctx.font="16px Arial";
+        sctx.fillText("Press SPACE to Restart",80,190);
+      }
+    }
+
+    function resetSnake(){
+      snake=[{x:160,y:160}];
+      dx=grid;dy=0;
+      snakeScore=0;
+      snakeOver=false;
+    }
+
+    document.addEventListener("keydown",e=>{
+      if(e.code==="ArrowLeft"&&dx===0){dx=-grid;dy=0;}
+      else if(e.code==="ArrowUp"&&dy===0){dy=-grid;dx=0;}
+      else if(e.code==="ArrowRight"&&dx===0){dx=grid;dy=0;}
+      else if(e.code==="ArrowDown"&&dy===0){dy=grid;dx=0;}
+      else if(e.code==="Space"&&snakeOver){resetSnake();}
+    });
+
+    // Mobile swipe
+    let touchStartX=0,touchStartY=0;
+    snakeCanvas.addEventListener("touchstart",e=>{
+      const t=e.touches[0];touchStartX=t.clientX;touchStartY=t.clientY;
+    });
+    snakeCanvas.addEventListener("touchend",e=>{
+      const t=e.changedTouches[0];
+      const dxTouch=t.clientX-touchStartX;const dyTouch=t.clientY-touchStartY;
+      if(Math.abs(dxTouch)>Math.abs(dyTouch)){
+        if(dxTouch>0&&dx===0){dx=grid;dy=0;} else if(dxTouch<0&&dx===0){dx=-grid;dy=0;}
+      } else {
+        if(dyTouch>0&&dy===0){dy=grid;dx=0;} else if(dyTouch<0&&dy===0){dy=-grid;dx=0;}
+      }
+    });
+
+    requestAnimationFrame(gameSnake);
+
+    // ===== Calendar =====
+    function generateCalendar(){
+      const today=new Date();const year=today.getFullYear();const month=today.getMonth();
+      const firstDay=new Date(year,month,1).getDay();const daysInMonth=new Date(year,month+1,0).getDate();
+      let table="<tr>";const days=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+      for(let d of days){table+="<th>"+d+"</th>";}table+="</tr><tr>";
+      for(let i=0;i<firstDay;i++){table+="<td></td>";}
+      for(let day=1;day<=daysInMonth;day++){const currentDay=new Date(year,month,day).getDay();
+        const isToday=day===today.getDate();
+        table+=`<td class="${isToday?"today":""}">${day}</td>`;
+        if(currentDay===6&&day<daysInMonth)table+="</tr><tr>";
+      }
+      table+="</tr>";document.getElementById("calendar").innerHTML=table;
     }
     generateCalendar();
   </script>
