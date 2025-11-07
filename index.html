@@ -326,3 +326,12 @@
   </script>
 </body>
 </html>
+document.addEventListener("keydown",e=>{keys[e.code]=true;});
+document.addEventListener("keydown", e => {
+  keys[e.code] = true;
+
+  // Fire when spacebar is pressed
+  if (e.code === "Space") {
+    shoot();
+  }
+});
