@@ -152,11 +152,12 @@
     document.addEventListener("touchstart",handleFlap);
     loop();
 
-    // ===== Infinite Asteroids =====
+    // ===== Infinite Asteroids + Persistent Best Score =====
     const aCanvas = document.getElementById("asteroidsCanvas");
     const actx = aCanvas.getContext("2d");
 
     let ship, asteroids, bullets, aScore;
+    let aBest = localStorage.getItem("asteroidsBest") ? parseInt(localStorage.getItem("asteroidsBest")) : 0;
 
     function resetAsteroids(){
       ship = {x:aCanvas.width/2, y:aCanvas.height/2, angle:0, velX:0, velY:0};
@@ -231,12 +232,16 @@
     function checkCollisions(){
       for(let i=asteroids.length-1;i>=0;i--){
         let a=asteroids[i];
-        // Ship no longer dies — infinite play!
+        // Ship never dies
         for(let j=bullets.length-1;j>=0;j--){
           let b=bullets[j];
           if(Math.hypot(b.x-a.x,b.y-a.y)<a.r){
             bullets.splice(j,1);
             aScore+=10;
+            if(aScore > aBest){
+              aBest = aScore;
+              localStorage.setItem("asteroidsBest", aBest);
+            }
             if(a.r>15){
               asteroids.push({x:a.x,y:a.y,r:a.r/2,dx:(Math.random()*2-1)*2,dy:(Math.random()*2-1)*2});
               asteroids.push({x:a.x,y:a.y,r:a.r/2,dx:(Math.random()*2-1)*2,dy:(Math.random()*2-1)*2});
@@ -268,7 +273,7 @@
 
       actx.fillStyle="white";
       actx.font="16px Arial";
-      actx.fillText("Score: "+aScore,10,20);
+      actx.fillText(`Score: ${aScore} | Best: ${aBest}`, 10, 20);
 
       requestAnimationFrame(loopAsteroids);
     }
@@ -277,7 +282,6 @@
     document.addEventListener("keydown",e=>{keys[e.code]=true;});
     document.addEventListener("keyup",e=>{keys[e.code]=false;});
 
-    // Mouse/tap shooting
     function shoot(){
       if(bullets.length<5){
         bullets.push({
